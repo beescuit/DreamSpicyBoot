@@ -41,7 +41,7 @@ object DreamSpicyBoot {
 	fun main(args: Array<String>) {
 		// hmmmmmm, spicy! https://youtu.be/6zGCKhfXPVo
 
-		println(t.yellow(HEADER))
+		println("\n" + t.yellow(HEADER))
 
 		val randomTip = randomStartupTips[random.nextInt(randomStartupTips.size)]
 
@@ -50,7 +50,6 @@ object DreamSpicyBoot {
 		val rootFolder = File(System.getProperty("serverFolder", ".")).absoluteFile
 		val spicyFolder = Paths.get(DreamSpicyBoot::class.java.protectionDomain.codeSource.location.toURI()).toFile().parentFile
 
-		println(spicyFolder)
 		val spicyConfigFile = File(spicyFolder, "config.json")
 
 		if (!spicyConfigFile.exists()) {
@@ -72,10 +71,12 @@ object DreamSpicyBoot {
 
 		with(t) {
 			println("Preparando ${(magenta + bold)(serverConfig.serverName)}...")
-			println("Versão                      ${serverConfig.serverVersion.name} / ${serverConfig.platformType.name}")
+			println("Versão                      ${serverConfig.serverVersion.getPretty()} / ${serverConfig.platformType.name}")
 			println("Deletar plugins ao iniciar? ${colorfulBoolean(serverConfig.deletePluginsOnBoot)}")
 			println("Plugins                     ${serverConfig.plugins.size}")
 		}
+
+		val pluginsFolder = File(rootFolder, "plugins")
 
 		if (serverConfig.autoUpdate) {
 			println(t.cyan("Verificando novas versões do servidor..."))
@@ -93,13 +94,22 @@ object DreamSpicyBoot {
 			println(t.cyan("Download encontrado: ${href}"))
 			val fileName = href.split("/").last()
 
-			val downloadUrl = URL("https://yivesmirror.com/files/paperspigot/$fileName")
-			val downloadConnection = downloadUrl.openConnection() as HttpURLConnection
-			downloadConnection.setRequestProperty("User-Agent", USER_AGENT)
-			val downloadInputStream = downloadConnection.getInputStream()
-			val jarBytes = downloadInputStream.readBytes()
+			val storedServerJarFile = File(pluginsParadiseFolder, fileName)
+
+			if (storedServerJarFile.exists()) {
+				println(t.brightGreen("A última versão de ${serverConfig.serverVersion.getPretty()} / ${serverConfig.platformType.name} (${t.white(fileName)}) já está disponível no nosso repositório de plugins! ~(˘▾˘~)"))
+			} else {
+				val downloadUrl = URL("https://yivesmirror.com/files/paperspigot/$fileName")
+				val downloadConnection = downloadUrl.openConnection() as HttpURLConnection
+				downloadConnection.setRequestProperty("User-Agent", USER_AGENT)
+				val downloadInputStream = downloadConnection.getInputStream()
+				val jarBytes = downloadInputStream.readBytes()
+				storedServerJarFile.writeBytes(jarBytes)
+
+				println(t.brightGreen("${serverConfig.serverVersion.getPretty()} / ${serverConfig.platformType.name} (${t.white(fileName)}) foi atualizada com sucesso!"))
+			}
 			val file = File(rootFolder, "server.jar")
-			file.writeBytes(jarBytes)
+			storedServerJarFile.copyTo(file, true)
 
 			println(t.brightGreen("Servidor atualizado com sucesso!"))
 		}
@@ -111,7 +121,6 @@ object DreamSpicyBoot {
 			println(t.brightGreen("EULA aceito com sucesso!"))
 		}
 
-		val pluginsFolder = File(rootFolder, "plugins")
 		val list = serverConfig.plugins
 
 		val deferred = list.filter { it.autoUpdate } .map { pluginInfo ->
@@ -156,7 +165,7 @@ object DreamSpicyBoot {
 					// Nós também iremos copiar a JAR com o nome "b{buildIndex}" na pasta de plugins
 					file.copyTo(circleArtifactFile)
 
-					println(t.brightGreen("${t.brightYellow(pluginInfo.name)} foi atualizado com sucesso! (${t.white("build ${buildNumber}")})"))
+					println(t.brightGreen("${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildNumber}")}) foi atualizado com sucesso!"))
 				} else {
 					throw RuntimeException("Plugin ${pluginInfo.name} utiliza source inexistente!")
 				}
