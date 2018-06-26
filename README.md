@@ -12,7 +12,7 @@
 <h1 align="center">DreamSpicyBoot</h1>
 <p align="center">🌶️ Deixando o startup do seu servidor mais apimentado. — Gerenciador de plugins, auto updater e muito mais! Hmmmm, Spicy Calamari!</p>
 
-<p align="center"><iframe width="560" height="315" src="https://www.youtube.com/embed/6zGCKhfXPVo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></p>
+<p align="center">🦑🌶️ https://youtu.be/6zGCKhfXPVo 🌶🦑️</p>
 
 DreamSpicyBoot é um gerenciador de inicialização de servidores para o [PerfectDreams](https://perfectdreams.net), originalmente criado para automaticamente atualizar plugins do [PerfectDreams](https://github.com/PerfectDreams) diretamente do CircleCI para o servidor, ele foi expandido para:
 
