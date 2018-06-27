@@ -129,7 +129,7 @@ object DreamSpicyBoot {
 
 				if (pluginInfo.updateFrom == UpdateSource.CIRCLECI) {
 					val buildIndex = pluginInfo.buildIndex ?: "latest"
-					val payload = getCircleArtifactInfo("github", pluginInfo.organization, pluginInfo.name, pluginInfo.buildIndex ?: "latest")
+					val payload = getCircleArtifactInfo("github", pluginInfo.organization ?: "PerfectDreams", pluginInfo.name, buildIndex)
 
 					if (payload == null) {
 						error("${t.brightYellow(pluginInfo.name)} não foi encontrado no CircleCI!")
@@ -146,7 +146,8 @@ object DreamSpicyBoot {
 					val matcher = CIRCLECI_PATTERN.matcher(firstArtifact).apply { this.find() }
 					val buildNumber = matcher.group(1)
 
-					val circleArtifactFile = File(pluginsParadiseFolder, pluginInfo.storedJarName.replace("{{build}}", "b$buildNumber"))
+					val storedJarName = (pluginInfo.storedJarName ?: "${pluginInfo.name}-{{build}}.jar").replace("{{build}}", "b$buildNumber")
+					val circleArtifactFile = File(pluginsParadiseFolder, storedJarName)
 
 					if (circleArtifactFile.exists()) {
 						println(t.brightGreen("A última versão de ${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildNumber}")}) já está disponível no nosso repositório de plugins! ~(˘▾˘~)"))
@@ -160,10 +161,9 @@ object DreamSpicyBoot {
 					val downloadConnection = downloadUrl.openConnection()
 					val downloadInputStream = downloadConnection.getInputStream()
 					val jarBytes = downloadInputStream.readBytes()
-					val file = File(pluginsParadiseFolder, pluginInfo.storedJarName.replace("{{build}}", buildIndex))
-					file.writeBytes(jarBytes)
+					circleArtifactFile.writeBytes(jarBytes)
 					// Nós também iremos copiar a JAR com o nome "b{buildIndex}" na pasta de plugins
-					file.copyTo(circleArtifactFile)
+					circleArtifactFile.copyTo(circleArtifactFile, true)
 
 					println(t.brightGreen("${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildNumber}")}) foi atualizado com sucesso!"))
 				} else {
@@ -188,7 +188,7 @@ object DreamSpicyBoot {
 			// Agora nós iremos pegar todas as JARs necessárias para iniciar o servidor
 			for (pluginInfo in list) {
 				val sourceJar = pluginsParadiseFolder.listFiles().firstOrNull {
-					it.extension == "jar" && it.nameWithoutExtension.matches(Regex(pluginInfo.sourceJarPattern))
+					it.extension == "jar" && it.nameWithoutExtension.matches(Regex(pluginInfo.sourceJarPattern?.replace("{{ name }}", pluginInfo.name) ?: pluginInfo.name))
 				}
 
 				if (sourceJar == null) {
@@ -196,8 +196,9 @@ object DreamSpicyBoot {
 					continue
 				}
 
-				sourceJar.copyTo(File(pluginsFolder, pluginInfo.jarName), true)
-				println(t.brightGreen("${t.brightYellow(pluginInfo.name)} copiado com sucesso para a pasta do servidor! Nome: ${t.brightYellow(pluginInfo.jarName)}"))
+				val jarName = pluginInfo.jarName ?: "${pluginInfo.name}.jar"
+				sourceJar.copyTo(File(pluginsFolder, jarName), true)
+				println(t.brightGreen("${t.brightYellow(pluginInfo.name)} copiado com sucesso para a pasta do servidor! Nome: ${t.brightYellow(jarName)}"))
 			}
 		}
 
