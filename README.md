@@ -19,13 +19,13 @@
 </p>
 <h1 align="center">🌶️ DreamSpicyBoot 🌶️</h1>
 <p align="center">
-<a href="https://circleci.com/gh/PerfectDreams/DreamSpicyCalamari"><img src="https://circleci.com/gh/PerfectDreams/DreamSpicyCalamari.svg?style=shield"></a>
-<a href="https://www.codacy.com/app/MrPowerGamerBR/DreamSpicyCalamari?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PerfectDreams/DreamSpicyCalamari&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/4bcd6b41d3fd4c8c809b05cca7befb81"></a>
-<a href="https://github.com/PerfectDreams/DreamSpicyCalamari/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-AGPL%20v3-lightgray.svg"></a>
+<a href="https://circleci.com/gh/PerfectDreams/DreamSpicyBoot"><img src="https://circleci.com/gh/PerfectDreams/DreamSpicyBoot.svg?style=shield"></a>
+<a href="https://www.codacy.com/app/MrPowerGamerBR/DreamSpicyBoot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PerfectDreams/DreamSpicyBoot&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/4bcd6b41d3fd4c8c809b05cca7befb81"></a>
+<a href="https://github.com/PerfectDreams/DreamSpicyBoot/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-AGPL%20v3-lightgray.svg"></a>
 </p>
 <p align="center">
-<a href="https://github.com/PerfectDreams/DreamSpicyCalamari/watchers"><img src="https://img.shields.io/github/watchers/PerfectDreams/DreamSpicyCalamari.svg?style=social&label=Watch"></a>
-<a href="https://github.com/PerfectDreams/DreamSpicyCalamari/stargazers"><img src="https://img.shields.io/github/stars/PerfectDreams/DreamSpicyCalamari.svg?style=social&label=Stars"></a>
+<a href="https://github.com/PerfectDreams/DreamSpicyBoot/watchers"><img src="https://img.shields.io/github/watchers/PerfectDreams/DreamSpicyBoot.svg?style=social&label=Watch"></a>
+<a href="https://github.com/PerfectDreams/DreamSpicyBoot/stargazers"><img src="https://img.shields.io/github/stars/PerfectDreams/DreamSpicyBoot.svg?style=social&label=Stars"></a>
 </p>
 <p align="center">Deixando o startup do seu servidor mais apimentado. — Gerenciador de plugins, auto updater e muito mais! Hmmmm, Spicy Calamari!</p>
 
@@ -152,7 +152,7 @@ E se tudo der certo...
 
 Você também pode usar este projeto e usar em outros lugares, mas lembrando...
 * Nós deixamos o código-fonte de nossos projetos para que outras pessoas possam se inspirar e aprender com nossos projetos, o objetivo é que pessoas que são fãs do PerfectDreams aprendam como o servidor funciona e, caso queiram, podem ajudar o servidor com bug fixes e novas funcionalidades.
-* Eu não irei dar suporte caso você queria usar o nosso projeto no seu servidor sem dar nada em troca para o PerfectDreams, lembre-se, a licença do projeto é [AGPL v3](https://github.com/PerfectDreams/DreamSpicyCalamari/blob/master/LICENSE), você é **obrigado a deixar todas as suas alterações no projeto públicas**!
+* Eu não irei dar suporte caso você queria usar o nosso projeto no seu servidor sem dar nada em troca para o PerfectDreams, lembre-se, a licença do projeto é [AGPL v3](https://github.com/PerfectDreams/DreamSpicyBoot/blob/master/LICENSE), você é **obrigado a deixar todas as suas alterações no projeto públicas**!
 * Eu não irei ficar explicando como arrumar problemas no seu projeto se você apenas quer pegar o código-fonte para outra coisa não relacionada com o PerfectDreams, **você está por sua conta e risco**.
 * Lembrando que nossos projetos precisam de setups e workflows específicos, você **não irá conseguir usar** nossos projetos apenas compilando e usando!
 * Existem várias coisas "hard coded" no projeto, ou seja, você terá que editar o código-fonte dela e recompilar, afinal, o projeto foi criado apenas para ser utilizado no PerfectDreams então você terá que fazer algumas modificações no código-fonte dela para funcionar. 😉
@@ -165,7 +165,7 @@ Mas se você quiser mesmo compilar o projeto, siga os seguintes passos:
 4. Tenha o Maven instalado na sua máquina com o `PATH` configurado corretamente. (para que você possa usar `mvn install` em qualquer pasta e o `JAVA_HOME`, para que o `mvn install` funcione)
 5. Tenha o IntelliJ IDEA instalado na sua máquina.
 6. Tenha um servidor de Minecraft rodando [Paper](https://github.com/PaperMC/Paper) na última versão disponível, para transformar sonhos em realidade, nossos projetos sempre utilizam a última versão disponível no momento que o projeto foi criado.
-7. Faça ```git clone https://github.com/PerfectDreams/DreamSpicyCalamari.git``` em alguma pasta no seu computador.
+7. Faça ```git clone https://github.com/PerfectDreams/DreamSpicyBoot.git``` em alguma pasta no seu computador.
 8. Agora, usando o PowerShell (ou o próprio Git Bash), entre na pasta criada e utilize `mvn install`
 9. Após terminar de compilar, vá na pasta `target` e pegue a JAR do projeto.
 10. Pronto, agora é só utilizar o projeto e se divertir! 🎉
@@ -181,7 +181,7 @@ Você precisa pensar "será que alguém iria utilizar isto?", se você criar um 
 
 ## 📦 Dependências
 
-Nós utilizamos várias [dependências no código-fonte](https://github.com/PerfectDreams/DreamSpicyCalamari/blob/master/pom.xml) deste projeto, obrigado a todos os mantenedores das dependências! Sem vocês, talvez nosso projeto não iria existir (ou teria várias funcionalidades reduzidas ou talvez até inexistentes!)
+Nós utilizamos várias [dependências no código-fonte](https://github.com/PerfectDreams/DreamSpicyBoot/blob/master/pom.xml) deste projeto, obrigado a todos os mantenedores das dependências! Sem vocês, talvez nosso projeto não iria existir (ou teria várias funcionalidades reduzidas ou talvez até inexistentes!)
 
 | Nome  | Mantenedor |
 | ------------- | ------------- |
