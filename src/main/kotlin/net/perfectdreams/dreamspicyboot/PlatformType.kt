@@ -1,5 +1,5 @@
 package net.perfectdreams.dreamspicyboot
 
 enum class PlatformType {
-	PAPER, WATERFALL
+	PAPER, AKARIN, WATERFALL
 }

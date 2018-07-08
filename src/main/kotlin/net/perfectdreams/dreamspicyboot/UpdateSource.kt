@@ -1,5 +1,12 @@
 package net.perfectdreams.dreamspicyboot
 
 enum class UpdateSource {
-	CIRCLECI, SPIGOT
+	// Development
+	CIRCLECI,
+	// Development
+	JENKINS,
+	// Stable
+	SPIGOT,
+	// Stable (tagged releases)
+	GITHUB
 }

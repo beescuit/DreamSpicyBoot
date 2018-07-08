@@ -19,7 +19,7 @@
 </p>
 <h1 align="center">🌶️ DreamSpicyBoot 🌶️</h1>
 <p align="center">
-<a href="https://circleci.com/gh/PerfectDreams/DreamSpicyBoot"><img src="https://circleci.com/gh/PerfectDreams/DreamSpicyBoot.svg?style=shield"></a>
+<a href="https://jenkins.perfectdreams.net/job/DreamSpicyBoot/"><img src="https://jenkins.perfectdreams.net/job/DreamSpicyBoot/badge/icon"></a>
 <a href="https://www.codacy.com/app/MrPowerGamerBR/DreamSpicyBoot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PerfectDreams/DreamSpicyBoot&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/4bcd6b41d3fd4c8c809b05cca7befb81"></a>
 <a href="https://github.com/PerfectDreams/DreamSpicyBoot/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-AGPL%20v3-lightgray.svg"></a>
 </p>
