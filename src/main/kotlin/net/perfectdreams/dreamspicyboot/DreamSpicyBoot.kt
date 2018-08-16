@@ -6,16 +6,16 @@ import com.github.ajalt.mordant.TermColors
 import com.github.salomonbrys.kotson.array
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.get
-import com.github.salomonbrys.kotson.string
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
+import net.perfectdreams.dreamspicyboot.tags.Tagging
+import net.perfectdreams.dreamspicyboot.utils.UpdateCheckState
 import org.jsoup.Jsoup
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 import java.util.regex.Pattern
@@ -32,6 +32,7 @@ object DreamSpicyBoot {
 			"A Lori e a Pantufa te amam! <3",
 			"You are filled with DETERMINATION"
 	)
+	lateinit var PLUGINS_PARADISE_FOLDER: File
 
 	const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0"
 	val random = SplittableRandom()
@@ -49,7 +50,6 @@ object DreamSpicyBoot {
 	@JvmStatic
 	fun main(args: Array<String>) {
 		// hmmmmmm, spicy! https://youtu.be/6zGCKhfXPVo
-
 		println("\n" + t.yellow(HEADER))
 
 		val randomTip = randomStartupTips[random.nextInt(randomStartupTips.size)]
@@ -69,6 +69,8 @@ object DreamSpicyBoot {
 		val spicyConfig = mapper.readValue(spicyConfigFile, SpicyConfig::class.java)
 
 		val pluginsParadiseFolder = File(spicyConfig.pluginsFolder)
+
+		PLUGINS_PARADISE_FOLDER = pluginsParadiseFolder
 
 		val serverConfigFile = File(rootFolder, "server_config.yml")
 		if (!serverConfigFile.exists()) {
@@ -132,147 +134,21 @@ object DreamSpicyBoot {
 
 		val list = serverConfig.plugins
 
-		val deferred = list.filter { it.autoUpdate } .map { pluginInfo ->
+		val deferred = list.filter { it.autoUpdater != null }.map { pluginInfo ->
 			async {
 				println(t.cyan("Verificando ${pluginInfo.name}..."))
+				val autoUpdater = pluginInfo.autoUpdater!!
 
-				when (pluginInfo.updateFrom) {
-					UpdateSource.CIRCLECI -> {
-						val buildIndex = pluginInfo.buildIndex ?: "latest"
-						val payload = getCircleArtifactInfo("github", pluginInfo.organization
-								?: "PerfectDreams", pluginInfo.name, buildIndex)
+				val updateStatus = autoUpdater.hasUpdateAvailable(pluginInfo)
 
-						if (payload == null) {
-							error("${t.brightYellow(pluginInfo.name)} não foi encontrado no CircleCI!")
-							return@async
-						}
-
-						val firstArtifact = payload.firstOrNull()?.url
-
-						if (firstArtifact == null) {
-							error("${t.brightYellow(pluginInfo.name)} não tem nenhum artifact no CircleCI!")
-							return@async
-						}
-
-						val matcher = CIRCLECI_PATTERN.matcher(firstArtifact).apply { this.find() }
-						val buildNumber = matcher.group(1)
-
-						val storedJarName = (pluginInfo.storedJarName
-								?: "${pluginInfo.name}-{{build}}.jar").replace("{{build}}", "b$buildNumber")
-						val circleArtifactFile = File(pluginsParadiseFolder, storedJarName)
-
-						if (circleArtifactFile.exists()) {
-							println(t.brightGreen("A última versão de ${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildNumber}")}) já está disponível no nosso repositório de plugins! ~(˘▾˘~)"))
-							return@async
-						}
-
-						var originalJarName = payload.first().path.split("/").last()
-
-						// Hora de baixar o artifact!
-						val downloadUrl = URL(firstArtifact)
-						val downloadConnection = downloadUrl.openConnection()
-						val downloadInputStream = downloadConnection.getInputStream()
-						val jarBytes = downloadInputStream.readBytes()
-						circleArtifactFile.writeBytes(jarBytes)
-						// Nós também iremos copiar a JAR com o nome "-latest" na pasta de plugins
-						if (buildIndex == "latest") {
-							val latest = File(pluginsParadiseFolder, "${pluginInfo.name}-latest.jar")
-							latest.delete()
-							Files.createSymbolicLink(latest.toPath(), circleArtifactFile.toPath())
-						}
-
-						println(t.brightGreen("${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildNumber}")}) foi atualizado com sucesso!"))
+				when (updateStatus) {
+					UpdateCheckState.NO_ARTIFACT_FOUND -> "${t.brightYellow(pluginInfo.name)} não tem nenhum artifact no ${autoUpdater.javaClass.simpleName}!"
+					UpdateCheckState.NOT_FOUND -> "${t.brightYellow(pluginInfo.name)} não foi encontrado no ${autoUpdater.javaClass.simpleName}!"
+					UpdateCheckState.ALREADY_UPDATED -> "A última versão de ${t.brightYellow(pluginInfo.name)} já está disponível no nosso repositório de plugins! ~(˘▾˘~)"
+					UpdateCheckState.UPDATE_AVAILABLE -> {
+						autoUpdater.handleUpdate(pluginInfo)
+						println(t.brightGreen("${t.brightYellow(pluginInfo.name)} foi atualizado com sucesso!"))
 					}
-					UpdateSource.JENKINS -> {
-						val buildIndex = pluginInfo.buildIndex ?: "lastSuccessfulBuild"
-						val rootUrl = pluginInfo.organization ?: "https://jenkins.perfectdreams.net"
-						val payload = getJenkinsArtifactInfo(pluginInfo.name, rootUrl, buildIndex)
-
-						if (payload == null) {
-							error("${t.brightYellow(pluginInfo.name)} não foi encontrado no Jenkins!")
-							return@async
-						}
-
-						val id = payload.first
-						val artifacts = payload.second
-
-						val firstArtifact = artifacts?.firstOrNull()
-
-						if (firstArtifact == null) {
-							error("${t.brightYellow(pluginInfo.name)} não tem nenhum artifact no Jenkins!")
-							return@async
-						}
-
-						val firstArtifactName = firstArtifact.filePath
-						val firstArtifactRelativePath = firstArtifact.relativePath
-
-						val buildNumber = id
-
-						val storedJarName = (pluginInfo.storedJarName
-								?: "${pluginInfo.name}-{{ build }}.jar").replace("{{ build }}", "b$buildNumber")
-						val circleArtifactFile = File(pluginsParadiseFolder, storedJarName)
-
-						if (circleArtifactFile.exists()) {
-							println(t.brightGreen("A última versão de ${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildNumber}")}) já está disponível no nosso repositório de plugins! ~(˘▾˘~)"))
-							return@async
-						}
-
-						// Hora de baixar o artifact!
-						val downloadUrl = URL("$rootUrl/job/${pluginInfo.name}/$buildIndex/artifact/$firstArtifactRelativePath")
-						val downloadConnection = downloadUrl.openConnection()
-						val downloadInputStream = downloadConnection.getInputStream()
-						val jarBytes = downloadInputStream.readBytes()
-						circleArtifactFile.writeBytes(jarBytes)
-
-						// Nós também iremos copiar a JAR com o nome "-latest" na pasta de plugins
-						if (buildIndex == "lastSuccessfulBuild") {
-							val latest = File(pluginsParadiseFolder, "${pluginInfo.name}-latest.jar")
-							latest.delete()
-							Files.createSymbolicLink(latest.toPath(), circleArtifactFile.toPath())
-						}
-
-						println(t.brightGreen("${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildNumber}")}) foi atualizado com sucesso!"))
-					}
-					UpdateSource.GITHUB -> {
-						val buildIndex = pluginInfo.buildIndex ?: run {
-							error("${t.brightYellow(pluginInfo.name)} não possui build index!")
-							return@async
-						}
-
-						val storedJarName = (pluginInfo.storedJarName
-								?: "${pluginInfo.name}-github-{{build}}.jar").replace("{{build}}", buildIndex)
-						val circleArtifactFile = File(pluginsParadiseFolder, storedJarName)
-
-						if (circleArtifactFile.exists()) {
-							println(t.brightGreen("A última versão de ${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildIndex}")}) já está disponível no nosso repositório de plugins! ~(˘▾˘~)"))
-							return@async
-						}
-
-						val organization = pluginInfo.organization ?: "PerfectDreams"
-						val artifacts = getGitHubTaggedReleaseInfo(pluginInfo.name, organization, buildIndex)
-
-						if (artifacts == null) {
-							error("${t.brightYellow(pluginInfo.name)} não foi encontrado no GitHub!")
-							return@async
-						}
-
-						val firstArtifact = artifacts.firstOrNull()
-
-						if (firstArtifact == null) {
-							error("${t.brightYellow(pluginInfo.name)} não tem o release especificado no GitHub!")
-							return@async
-						}
-
-						// Hora de baixar o artifact!
-						val downloadUrl = URL(firstArtifact.browserDownloadUrl)
-						val downloadConnection = downloadUrl.openConnection()
-						val downloadInputStream = downloadConnection.getInputStream()
-						val jarBytes = downloadInputStream.readBytes()
-						circleArtifactFile.writeBytes(jarBytes)
-
-						println(t.brightGreen("${t.brightYellow(pluginInfo.name)} (${t.white("build ${buildIndex}")}) foi atualizado com sucesso!"))
-					}
-					else -> throw RuntimeException("Plugin ${pluginInfo.name} utiliza source inexistente!")
 				}
 			}
 		}
@@ -283,34 +159,41 @@ object DreamSpicyBoot {
 			}
 
 			pluginsFolder.mkdirs()
-
 			if (serverConfig.deletePluginsOnBoot) {
 				println(t.cyan("Deletando plugins antigos..."))
 				pluginsFolder.listFiles().filter { it.extension == "jar" }.forEach { it.delete() }
 			}
-
 			println(t.cyan("Movendo plugins..."))
+
 			// Agora nós iremos pegar todas as JARs necessárias para iniciar o servidor
 			for (pluginInfo in list) {
-				val sourceJar = pluginsParadiseFolder.listFiles().firstOrNull {
-					it.extension == "jar" && it.nameWithoutExtension.matches(
-							Regex(
-									(pluginInfo.sourceJarPattern ?: pluginInfo.name)
-											.replace("{{ name }}", pluginInfo.name)
-											.replace("{{ build }}", pluginInfo.buildIndex ?: "latest")
+				val pluginFolder = File(PLUGINS_PARADISE_FOLDER, pluginInfo.name)
+				pluginFolder.mkdirs()
 
-							)
-					)
+				val tagsFile = File(pluginFolder, "tags.yml")
+
+				var jarName = pluginInfo.name + ".jar"
+
+				if (pluginInfo.version != null) {
+					if (tagsFile.exists()) {
+						val tagging = mapper.readValue(tagsFile, Tagging::class.java)
+						val tag = tagging.tags.firstOrNull { it.name == pluginInfo.version }
+						if (tag != null) {
+							jarName = tag.jarName
+						}
+					} else {
+						jarName = pluginInfo.name + "-" + pluginInfo.version + ".jar"
+					}
 				}
 
-				if (sourceJar == null) {
+				val sourceJar = File(pluginFolder, jarName)
+
+				if (sourceJar.exists()) {
+					sourceJar.copyTo(File(pluginsFolder, "${pluginInfo.name}.jar"), true)
+					println(t.brightGreen("${t.brightYellow(pluginInfo.name)} copiado com sucesso para a pasta do servidor! Nome: ${t.brightYellow(jarName)}"))
+				} else {
 					error("Source JAR de ${t.brightYellow(pluginInfo.name)} não existe ou não foi encontrada!")
-					continue
 				}
-
-				val jarName = pluginInfo.jarName ?: "${pluginInfo.name}.jar"
-				sourceJar.copyTo(File(pluginsFolder, jarName), true)
-				println(t.brightGreen("${t.brightYellow(pluginInfo.name)} copiado com sucesso para a pasta do servidor! Nome: ${t.brightYellow(jarName)}"))
 			}
 		}
 
@@ -370,24 +253,6 @@ object DreamSpicyBoot {
 		val content = byteArray.toString(Charsets.UTF_8)
 
 		return gson.fromJson(content)
-	}
-
-	fun getJenkinsArtifactInfo(jobName: String, rootUrl: String, buildIndex: String = "lastSuccessfulBuild"): Pair<String, List<JenkinsArtifact>?>? {
-		val url = URL("$rootUrl/job/$jobName/$buildIndex/api/json")
-
-		val connection = url.openConnection() as HttpURLConnection
-		val responseCode = connection.responseCode
-
-		if (responseCode == 404) {
-			return null
-		}
-
-		val inputStream = connection.inputStream
-		val byteArray = inputStream.readBytes()
-		val content = byteArray.toString(Charsets.UTF_8)
-
-		val payload = jsonParser.parse(content)
-		return Pair(payload["id"].string, gson.fromJson(payload["artifacts"]))
 	}
 
 	fun getGitHubTaggedReleaseInfo(projectName: String, organization: String, buildIndex: String): List<GitHubAsset>? {
