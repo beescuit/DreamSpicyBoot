@@ -1,4 +1,6 @@
-package net.perfectdreams.dreamspicyboot
+package net.perfectdreams.dreamspicyboot.plugins
+
+import net.perfectdreams.dreamspicyboot.UpdateSource
 
 class PluginInfo(
 		val name: String,
