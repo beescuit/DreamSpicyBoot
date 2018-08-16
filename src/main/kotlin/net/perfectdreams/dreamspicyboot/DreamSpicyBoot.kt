@@ -1,5 +1,7 @@
 package net.perfectdreams.dreamspicyboot
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.github.ajalt.mordant.TermColors
 import com.github.salomonbrys.kotson.array
 import com.github.salomonbrys.kotson.fromJson
@@ -21,6 +23,7 @@ import java.util.regex.Pattern
 object DreamSpicyBoot {
 	val gson = Gson()
 	val jsonParser = JsonParser()
+	val mapper = ObjectMapper(YAMLFactory())
 	val randomStartupTips = mutableListOf(
 			"Yeah, I know... I gotta believe!",
 			"Hmmmmm... Spicy Calamari!",
@@ -56,24 +59,24 @@ object DreamSpicyBoot {
 		val rootFolder = File(System.getProperty("serverFolder", ".")).absoluteFile
 		val spicyFolder = Paths.get(DreamSpicyBoot::class.java.protectionDomain.codeSource.location.toURI()).toFile().parentFile
 
-		val spicyConfigFile = File(spicyFolder, "config.json")
+		val spicyConfigFile = File(spicyFolder, "config.yml")
 
 		if (!spicyConfigFile.exists()) {
-			error("config.json não existe!")
+			error("config.yml não existe!")
 			return
 		}
 
-		val spicyConfig = gson.fromJson<SpicyConfig>(spicyConfigFile.readText())
+		val spicyConfig = mapper.readValue(spicyConfigFile, SpicyConfig::class.java)
 
 		val pluginsParadiseFolder = File(spicyConfig.pluginsFolder)
 
-		val serverConfigFile = File(rootFolder, "server_config.json")
+		val serverConfigFile = File(rootFolder, "server_config.yml")
 		if (!serverConfigFile.exists()) {
-			error("server_config.json não existe!")
+			error("server_config.yml não existe!")
 			return
 		}
 
-		val serverConfig = gson.fromJson<ServerConfig>(serverConfigFile.readText())
+		val serverConfig = mapper.readValue(serverConfigFile, ServerConfig::class.java)
 
 		with(t) {
 			println("Preparando ${(magenta + bold)(serverConfig.serverName)}...")
@@ -330,8 +333,8 @@ object DreamSpicyBoot {
 		if (spicyConfig.extraFlags != null) {
 			javaStartup += " ${spicyConfig.extraFlags.replace("{{serverName}}", serverConfig.serverName.replace(" ", "_").toLowerCase())}"
 		}
-		if (serverConfig.enableJRebel && spicyConfig.jrebelFlags != null) {
-			javaStartup += " ${spicyConfig.jrebelFlags.replace("{{jrebelPort}}", serverConfig.jrebelPort.toString())}"
+		if (serverConfig.jrebel.enabled && spicyConfig.jrebelFlags != null) {
+			javaStartup += " ${spicyConfig.jrebelFlags.replace("{{jrebelPort}}", serverConfig.jrebel.port.toString())}"
 		}
 
 		val classpathJars = mutableListOf("server.jar")
