@@ -1,5 +1,6 @@
 package net.perfectdreams.dreamspicyboot
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import net.perfectdreams.dreamspicyboot.plugins.PluginInfo
 
@@ -22,4 +23,9 @@ class ServerConfig(
 		val plugins: List<PluginInfo>
 )
 
-class JRebelConfig(val enabled: Boolean, val port: Int)
+class JRebelConfig @JsonCreator constructor(
+		@JsonProperty("enabled")
+		val enabled: Boolean,
+		@JsonProperty("port")
+		val port: Int
+)
