@@ -2,7 +2,7 @@ package net.perfectdreams.dreamspicyboot
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import net.perfectdreams.dreamspicyboot.plugins.PluginInfo
+import net.perfectdreams.dreamspicyboot.plugins.ServerPlugin
 
 class ServerConfig(
 		@JsonProperty("server-name")
@@ -20,7 +20,7 @@ class ServerConfig(
 		@JsonProperty("flags")
 		val flags: String,
 		@JsonProperty("plugins")
-		val plugins: List<PluginInfo>
+		val plugins: List<ServerPlugin>
 )
 
 class JRebelConfig @JsonCreator constructor(

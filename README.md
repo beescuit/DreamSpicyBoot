@@ -53,88 +53,85 @@ Você também pode doar para a [Loritta](https://loritta.website/support), a mas
 
 ### 🙌 Como Usar?
 
-Usar o DreamSpicyBoot é simples, primeiro você precisa colocar o DreamSpicyBoot em alguma pasta e criar um `config.json`.
-```
-{
-   "pluginsFolder":"/home/servers/perfectdreams/plugins_paradise/",
-   "extraFlags":"-Dserver={{serverName}}",
-   "classpathJars": [ "/home/servers/perfectdreams/plugins_paradise/kotlin/*" ],
-   "jrebelFlags":"-Drebel.remoting_port={{jrebelPort}} -agentpath:/home/jrebel/lib/libjrebel64.so -Drebel.remoting_plugin=true"
-}
-```
-`pluginsFolder`: Aonde o DreamSpicyBoot irá salvar plugins baixados.
-`extraFlags`: JVM flags que serão adicionadas no script de inicialização do servidor.
-`classpathJars`: JARs que deverão ser colocadas na classpath.
-`jrebelFlags`: Flags que serão usadas pelo JRebel, caso esteja ativado no servidor.
-
-Após configurar o DreamSpicyBoot, você deverá criar uma configuração chamada `server_config.json` na pasta do seu servidor.
-```
-{
-   "serverName": "PerfectDreams Lobby",
-   "platformType": "PAPER",
-   "serverVersion": "1.12.2",
-   "autoUpdate": true,
-   "deletePluginsOnBoot": true,
-   "flags": "-Xmx512M -Xms512M -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:MaxGCPauseMillis=100 -XX:+DisableExplicitGC -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:InitiatingHeapOccupancyPercent=10 -XX:G1MixedGCLiveThresholdPercent=50 -XX:+AggressiveOpts -XX:+AlwaysPreTouch",
-   "enableJRebel": true,
-   "jrebelPort": 54549,
-   "plugins":[
-      {
-         "name":"DreamCore",
-         "autoUpdate":true,
-         "updateFrom":"CIRCLECI",
-         "sourceJarPattern":"DreamCore-latest",
-         "storedJarName":"DreamCore-{{build}}.jar",
-         "jarName":"DreamCore.jar"
-      },
-      ...
-      {
-         "name":"PlugMan",
-         "autoUpdate":false,
-         "sourceJarPattern":"PlugMan",
-         "jarName":"PlugMan.jar"
-      }
-   ]
-}
+Usar o DreamSpicyBoot é simples, primeiro você precisar colocar o DreamSpicyBoot em alguma pasta e criar um `config.yml`.
+```yml
+plugins-folder: "/home/servers/perfectdreams/plugins_paradise/"
+extra-flags: "-Dserver={{serverName}}"
+classpath-jars:
+  - "/home/servers/perfectdreams/plugins_paradise/kotlin/*"
+jrebel-flags: "-Drebel.remoting_port={{jrebelPort}} -agentpath:/home/jrebel-2018-1-3/lib/libjrebel64.so -Drebel.remoting_plugin=true"
 ```
 
-`serverName`: Nome do servidor.
-`platformType`: Plataforma que o servidor utiliza.
-`serverVersion`: Versão do servidor.
-`autoUpdate`: Se o servidor irá atualizar automaticamente a JAR da plataforma escolhida.
-`deletePluginsOnBoot`: Se o DreamSpicyBoot deve deletar todas as JARs da pasta de plugins ao iniciar o servidor.
-`flags`: JVM flags.
-`enableJRebel`: Se o JRebel deve estar ativado no servidor.
-`jrebelPort`: Porta que o JRebel deverá utilizar
-`plugins`: Uma lista com todos os plugins que o servidor utiliza.
+| Chave  | Significado  |
+|---|---|
+| `plugins-folder`  | Aonde o DreamSpicyBoot irá salvar plugins baixados. |
+| `extra-flags`  | JVM flags que serão adicionadas no script de inicialização do servidor. |
+| `classpath-jars`  | JARs que deverão ser colocadas na classpath. |
+| `jrebel-flags`  | Flags que serão usadas pelo JRebel, caso esteja ativado no servidor. |
 
-```
-{
-    "name":"DreamCore",
-    "organization": "PerfectDreams",
-    "autoUpdate":true,
-    "updateFrom":"CIRCLECI",
-    "sourceJarPattern":"DreamCore-latest",
-    "storedJarName":"DreamCore-{{build}}.jar",
-    "jarName":"DreamCore.jar"
-}
-```
-```
-{
-    "name":"ProtocolSupport",
-    "autoUpdate":false,
-    "sourceJarPattern":"ProtocolSupport",
-    "jarName":"ProtocolSupport.jar"
-}
+Após configurar o DreamSpicyBoot, você deverá criar uma configuração chamada `server_config.yml` na pasta do seu servidor.
+```yml
+server-name: PerfectDreams Lobby
+platform-type: PAPER
+minecraft-version: "Minecraft 1.12.2"
+auto-update: false
+deletePluginsOnBoot: true
+flags: "-Xmx512M -Xms512M -Dprotocolsupport.replacedecoderencoder -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:MaxGCPauseMillis=100 -XX:+DisableExplicitGC -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:InitiatingHeapOccupancyPercent=10 -XX:G1MixedGCLiveThresholdPercent=50 -XX:+AggressiveOpts -XX:+AlwaysPreTouch"
+jrebel:
+  enabled: true
+  port: 54549
+plugins:
+- name: DreamCore
+  auto-update:
+    update-source: "JenkinsUpdater"
 ```
 
-`name`: Nome do plugin.
-`organization`: Organização no GitHub do plugin.
-`autoUpdate`: Se o plugin será atualizado automaticamente.
-`updateFrom`: Fonte do plugin.
-`sourceJarPattern`: Pattern RegEx que será utilizado para encontrar o plugin na `pluginFolder` do DreamSpicyBoot.
-`storedJarName`: Como o DreamSpicyBoot irá salvar o nome da JAR no `pluginFolder`.
-`jarName`: Nome do plugin no `plugins`.
+| Chave  | Significado  |
+|---|---|
+| `server-name`  | Nome do servidor. |
+| `platform-type`  | Plataforma que o servidor utiliza. |
+| `minecraft-version`  | Versão do servidor. |
+| `auto-update`  | Se o servidor irá atualizar automaticamente a JAR da plataforma escolhida. |
+| `delete-plugins-on-boot`  | Se o DreamSpicyBoot deve deletar todas as JARs da pasta de plugins ao iniciar o servidor. |
+| `flags`  | JVM flags. |
+| `jrebel.enabled`  | Se o JRebel deve estar ativado no servidor. |
+| `jrebel.port`  | Porta que o JRebel deverá utilizar. |
+| `plugins`  | Uma lista com todos os plugins que o servidor utiliza. |
+
+Plugins são registrados assim:
+```yml
+- name: DreamCore
+  auto-update:
+    update-source: "JenkinsUpdater"
+```
+```yml
+- name: Citizens
+  version: LATEST
+```
+| Chave  | Significado  |
+|---|---|
+| `name`  | Nome do plugin. |
+| `version`  | (Opcional) Versão do plugin |
+| `auto-update.update-source`  | (Opcional) Fonte dos Updates |
+
+**Update Sources disponíveis:** `JenkinsUpdater`, `CircleUpdater`, `GitHubUpdater`, `SpigotUpdater`.
+
+Caso você coloque `LATEST` no `version`, o DreamSpicyBoot irá pegar o arquivo que foi editado mais recentemente na pasta do plugin.
+
+Caso você esteja utilizando o `GitHubUpdater`, a versão publicada no GitHub será pega pelo valor do `version`
+
+Caso você esteja utilizando o `JenkinsUpdater`, é possível alterar o servidor em que as versões são pegas alterando o valor do `server`
+
+Caso você esteja utilizando o `CircleUpdater`, é possível alterar a organização em que as versões são pegas alterando o valor do `organization`
+
+Caso você esteja utilizando o `JenkinsUpdater` ou o `CircleUpdater`, é possível definir qual build será baixado usando `build-index`
+
+O `version` também suporta tagged releases locais, para criar uma tag, crie um arquivo chamado `tags.yml` na pasta do plugin
+```yml
+tags:
+- name: "LATEST_1_7_10"
+  jar-name: "ProtocolSupport-1_7_10.jar"
+```
 
 Após criar as configurações necessárias, crie um arquivo chamado `start.sh` e inicie ele pelo bash
 ```
