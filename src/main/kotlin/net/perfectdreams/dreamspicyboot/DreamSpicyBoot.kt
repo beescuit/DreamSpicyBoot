@@ -3,9 +3,6 @@ package net.perfectdreams.dreamspicyboot
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.github.ajalt.mordant.TermColors
-import com.github.salomonbrys.kotson.array
-import com.github.salomonbrys.kotson.fromJson
-import com.github.salomonbrys.kotson.get
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import kotlinx.coroutines.experimental.async
@@ -142,9 +139,9 @@ object DreamSpicyBoot {
 				val updateStatus = autoUpdater.hasUpdateAvailable(pluginInfo)
 
 				when (updateStatus) {
-					UpdateCheckState.NO_ARTIFACT_FOUND -> "${t.brightYellow(pluginInfo.name)} não tem nenhum artifact no ${autoUpdater.javaClass.simpleName}!"
-					UpdateCheckState.NOT_FOUND -> "${t.brightYellow(pluginInfo.name)} não foi encontrado no ${autoUpdater.javaClass.simpleName}!"
-					UpdateCheckState.ALREADY_UPDATED -> "A última versão de ${t.brightYellow(pluginInfo.name)} já está disponível no nosso repositório de plugins! ~(˘▾˘~)"
+					UpdateCheckState.NO_ARTIFACT_FOUND -> error("${t.brightYellow(pluginInfo.name)} não tem nenhum artifact no ${autoUpdater.javaClass.simpleName}!")
+					UpdateCheckState.NOT_FOUND -> error("${t.brightYellow(pluginInfo.name)} não foi encontrado no ${autoUpdater.javaClass.simpleName}!")
+					UpdateCheckState.ALREADY_UPDATED -> println(t.brightGreen("A última versão de ${t.brightYellow(pluginInfo.name)} já está disponível no nosso repositório de plugins! ~(˘▾˘~)"))
 					UpdateCheckState.UPDATE_AVAILABLE -> {
 						autoUpdater.handleUpdate(pluginInfo)
 						println(t.brightGreen("${t.brightYellow(pluginInfo.name)} foi atualizado com sucesso!"))
