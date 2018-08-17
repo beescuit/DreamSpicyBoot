@@ -182,7 +182,11 @@ object DreamSpicyBoot {
 							jarName = tag.jarName
 						}
 					} else {
-						jarName = pluginInfo.name + "-" + pluginInfo.version + ".jar"
+						if (pluginInfo.version == "LATEST") {
+							jarName = pluginFolder.listFiles().filter { it.extension == "jar" }.sortedByDescending { it.lastModified() }.first().name
+						} else {
+							jarName = pluginInfo.name + "-" + pluginInfo.version + ".jar"
+						}
 					}
 				}
 
@@ -236,38 +240,6 @@ object DreamSpicyBoot {
 		startupScript.writeText(scriptLines)
 
 		println(t.brightGreen("Sucesso! Servidor está pronto para iniciar e brilhar! ʕ•ᴥ•ʔ"))
-	}
-
-	fun getCircleArtifactInfo(vcsType: String, organization: String, repository: String, buildIndex: String = "latest"): List<CircleArtifact>? {
-		val url = URL("https://circleci.com/api/v1.1/project/$vcsType/$organization/$repository/$buildIndex/artifacts")
-
-		val connection = url.openConnection() as HttpURLConnection
-		val responseCode = connection.responseCode
-
-		if (responseCode == 404) {
-			return null
-		}
-
-		val inputStream = connection.inputStream
-		val byteArray = inputStream.readBytes()
-		val content = byteArray.toString(Charsets.UTF_8)
-
-		return gson.fromJson(content)
-	}
-
-	fun getGitHubTaggedReleaseInfo(projectName: String, organization: String, buildIndex: String): List<GitHubAsset>? {
-		val url = URL("https://api.github.com/repos/$organization/$projectName/releases/tags/$buildIndex")
-
-		val connection = url.openConnection() as HttpURLConnection
-		val responseCode = connection.responseCode
-
-		if (responseCode == 404) {
-			return null
-		}
-
-		val content = connection.getContentAsString()
-		val payload = jsonParser.parse(content)
-		return gson.fromJson(payload["assets"].array)
 	}
 
 	fun error(text: Any) {

@@ -11,13 +11,15 @@ import java.net.URL
 @JsonIgnoreProperties(ignoreUnknown=true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "update-source")
 @JsonSubTypes(
-		JsonSubTypes.Type(value = JenkinsUpdater::class, name = "JenkinsUpdater")
+		JsonSubTypes.Type(value = JenkinsUpdater::class, name = "JenkinsUpdater"),
+		JsonSubTypes.Type(value = CircleUpdater::class, name = "CircleUpdater"),
+		JsonSubTypes.Type(value = GitHubUpdater::class, name = "GitHubUpdater")
 )
 abstract class AutoUpdater {
 	abstract fun hasUpdateAvailable(pluginInfo: ServerPlugin): UpdateCheckState
 
-	fun checkIfAlreadyDownloaded(pluginInfo: ServerPlugin, id: String): Boolean {
-		val jarFile = getJarFile(pluginInfo, "b$id")
+	fun checkIfAlreadyDownloaded(pluginInfo: ServerPlugin, suffix: String): Boolean {
+		val jarFile = getJarFile(pluginInfo, suffix)
 
 		return jarFile.exists()
 	}
