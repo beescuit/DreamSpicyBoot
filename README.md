@@ -53,20 +53,34 @@ Você também pode doar para a [Loritta](https://loritta.website/support), a mas
 
 ### 🙌 Como Usar?
 
+#### Usando Windows?
+DreamSpicyBoot também funciona para windows! Só que com uma pequena diferença. Você cria um arquivo chamado `start.bat` (ao invés de `start.sh`)
+com isso
+```
+java -Xmx256M -Xms256M -DserverRoot=%CD% -jar DreamSpicyBoot-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+start start0.bat
+
+```
+
+
+
 Usar o DreamSpicyBoot é simples, primeiro você precisar colocar o DreamSpicyBoot em alguma pasta e criar um `config.yml`.
 ```yml
 plugins-folder: "/home/servers/perfectdreams/plugins_paradise/"
 extra-flags: "-Dserver={{serverName}}"
+java-path: 'Path do java no lugar'
 classpath-jars:
   - "/home/servers/perfectdreams/plugins_paradise/kotlin/*"
 jrebel-flags: "-Drebel.remoting_port={{jrebelPort}} -agentpath:/home/jrebel-2018-1-3/lib/libjrebel64.so -Drebel.remoting_plugin=true"
-```
+
 
 | Chave  | Significado  |
 |---|---|
 | `plugins-folder`  | Aonde o DreamSpicyBoot irá salvar plugins baixados. |
 | `extra-flags`  | JVM flags que serão adicionadas no script de inicialização do servidor. |
 | `classpath-jars`  | JARs que deverão ser colocadas na classpath. |
+| `java-path` | Diretorio do java.exe
 | `jrebel-flags`  | Flags que serão usadas pelo JRebel, caso esteja ativado no servidor. |
 
 Após configurar o DreamSpicyBoot, você deverá criar uma configuração chamada `server_config.yml` na pasta do seu servidor.

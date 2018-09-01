@@ -7,6 +7,8 @@ class SpicyConfig(
 		val pluginsFolder: String,
 		@JsonProperty("extra-flags")
 		val extraFlags: String?,
+		@JsonProperty("java-path")
+		val javaPath: String,
 		@JsonProperty("classpath-jars")
 		val classpathJars: List<String>,
 		@JsonProperty("jrebel-flags")

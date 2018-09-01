@@ -200,43 +200,82 @@ object DreamSpicyBoot {
 
 		println(t.cyan("Criando script de inicialização..."))
 
-		val startupScript = File(rootFolder, "start0.sh")
-		startupScript.delete()
+		// É windows ou linux?
+		if (getSystem().startsWith("Windows")) {
+			val startupScript = File(rootFolder, "start0.bat")
+			startupScript.delete()
 
-		var scriptLines = ""
+			var scriptLines = ""
 
-		for (line in HEADER.lines()) {
-			scriptLines += "# $line\n"
+			var javaStartup = "\"${spicyConfig.javaPath}\""
+
+			if (spicyConfig.extraFlags != null) {
+				javaStartup += " ${spicyConfig.extraFlags.replace("{{serverName}}", serverConfig.serverName.replace(" ", "_").toLowerCase())}"
+			}
+			if (serverConfig.jrebel.enabled && spicyConfig.jrebelFlags != null) {
+				javaStartup += " ${spicyConfig.jrebelFlags.replace("{{jrebelPort}}", serverConfig.jrebel.port.toString())}"
+			}
+			val classpathJars = mutableListOf("server.jar")
+			classpathJars.addAll(spicyConfig.classpathJars)
+
+			val classPath = "\"${classpathJars.joinToString(";")}\""
+
+			val mainClass = when (serverConfig.platformType) {
+				PlatformType.PAPER -> "org.bukkit.craftbukkit.Main"
+				PlatformType.AKARIN -> "net.minecraft.launchwrapper.Launch"
+				else -> throw RuntimeException("${serverConfig.platformType.name} não é suportado!")
+			}
+
+			javaStartup += " ${serverConfig.flags} -cp $classPath $mainClass"
+
+			scriptLines += javaStartup
+
+			startupScript.writeText(scriptLines)
+
+			println(t.brightGreen("Sucesso! Servidor está pronto para iniciar e brilhar! ʕ•ᴥ•ʔ"))
+
+
+		} else if (getSystem() == "Linux"){
+			val startupScript = File(rootFolder, "start0.sh")
+			startupScript.delete()
+
+			var scriptLines = ""
+
+			for (line in HEADER.lines()) {
+				scriptLines += "# $line\n"
+			}
+
+			scriptLines += "# $randomTip\n"
+			scriptLines += "# Gerado às ${System.currentTimeMillis()}\n\n"
+
+			var javaStartup = "/usr/local/jdk1.8.0_172/bin/java"
+
+			if (spicyConfig.extraFlags != null) {
+				javaStartup += " ${spicyConfig.extraFlags.replace("{{serverName}}", serverConfig.serverName.replace(" ", "_").toLowerCase())}"
+			}
+			if (serverConfig.jrebel.enabled && spicyConfig.jrebelFlags != null) {
+				javaStartup += " ${spicyConfig.jrebelFlags.replace("{{jrebelPort}}", serverConfig.jrebel.port.toString())}"
+			}
+
+			val classpathJars = mutableListOf("server.jar")
+			classpathJars.addAll(spicyConfig.classpathJars)
+
+			val mainClass = when (serverConfig.platformType) {
+				PlatformType.PAPER -> "org.bukkit.craftbukkit.Main"
+				PlatformType.AKARIN -> "net.minecraft.launchwrapper.Launch"
+				else -> throw RuntimeException("${serverConfig.platformType.name} não é suportado!")
+			}
+
+			javaStartup += " ${serverConfig.flags} -cp ${classpathJars.joinToString(":", transform = { "\"$it\""})} $mainClass"
+
+			scriptLines += javaStartup
+
+			startupScript.writeText(scriptLines)
+
+			println(t.brightGreen("Sucesso! Servidor está pronto para iniciar e brilhar! ʕ•ᴥ•ʔ"))
 		}
 
-		scriptLines += "# $randomTip\n"
-		scriptLines += "# Gerado às ${System.currentTimeMillis()}\n\n"
 
-		var javaStartup = "/usr/local/jdk1.8.0_172/bin/java"
-
-		if (spicyConfig.extraFlags != null) {
-			javaStartup += " ${spicyConfig.extraFlags.replace("{{serverName}}", serverConfig.serverName.replace(" ", "_").toLowerCase())}"
-		}
-		if (serverConfig.jrebel.enabled && spicyConfig.jrebelFlags != null) {
-			javaStartup += " ${spicyConfig.jrebelFlags.replace("{{jrebelPort}}", serverConfig.jrebel.port.toString())}"
-		}
-
-		val classpathJars = mutableListOf("server.jar")
-		classpathJars.addAll(spicyConfig.classpathJars)
-
-		val mainClass = when (serverConfig.platformType) {
-			PlatformType.PAPER -> "org.bukkit.craftbukkit.Main"
-			PlatformType.AKARIN -> "net.minecraft.launchwrapper.Launch"
-			else -> throw RuntimeException("${serverConfig.platformType.name} não é suportado!")
-		}
-
-		javaStartup += " ${serverConfig.flags} -cp ${classpathJars.joinToString(":", transform = { "\"$it\""})} $mainClass"
-
-		scriptLines += javaStartup
-
-		startupScript.writeText(scriptLines)
-
-		println(t.brightGreen("Sucesso! Servidor está pronto para iniciar e brilhar! ʕ•ᴥ•ʔ"))
 	}
 
 	fun error(text: Any) {
@@ -249,6 +288,9 @@ object DreamSpicyBoot {
 		} else {
 			t.red("NÃO")
 		}
+	}
+	fun getSystem() : String {
+		return System.getProperty("os.name")
 	}
 
 	fun getPluginJar(pluginInfo: ServerPlugin): File {
