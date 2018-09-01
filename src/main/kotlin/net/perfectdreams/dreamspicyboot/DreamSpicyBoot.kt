@@ -1,12 +1,18 @@
 package net.perfectdreams.dreamspicyboot
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.github.ajalt.mordant.TermColors
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
+import net.perfectdreams.dreamspicyboot.plugins.ServerPlugin
 import net.perfectdreams.dreamspicyboot.tags.Tagging
 import net.perfectdreams.dreamspicyboot.utils.UpdateCheckState
 import org.jsoup.Jsoup
@@ -20,7 +26,7 @@ import java.util.regex.Pattern
 object DreamSpicyBoot {
 	val gson = Gson()
 	val jsonParser = JsonParser()
-	val mapper = ObjectMapper(YAMLFactory())
+	val mapper = ObjectMapper(YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
 	val randomStartupTips = mutableListOf(
 			"Yeah, I know... I gotta believe!",
 			"Hmmmmm... Spicy Calamari!",
@@ -46,6 +52,16 @@ object DreamSpicyBoot {
 
 	@JvmStatic
 	fun main(args: Array<String>) {
+		mapper.registerModule(KotlinModule())
+				.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+				.setVisibility(
+						mapper.serializationConfig.defaultVisibilityChecker.
+								withFieldVisibility(JsonAutoDetect.Visibility.ANY).
+								withGetterVisibility(JsonAutoDetect.Visibility.NONE).
+								withIsGetterVisibility(JsonAutoDetect.Visibility.NONE)
+				)
+				.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+
 		// hmmmmmm, spicy! https://youtu.be/6zGCKhfXPVo
 		println("\n" + t.yellow(HEADER))
 
@@ -68,6 +84,13 @@ object DreamSpicyBoot {
 		val pluginsParadiseFolder = File(spicyConfig.pluginsFolder)
 
 		PLUGINS_PARADISE_FOLDER = pluginsParadiseFolder
+
+		if (args.getOrNull(0) == "manager") {
+			val args = args.toMutableList()
+			args.removeAt(0)
+			DreamPackageManager.main(args.toTypedArray())
+			return
+		}
 
 		val serverConfigFile = File(rootFolder, "server_config.yml")
 		if (!serverConfigFile.exists()) {
@@ -164,34 +187,11 @@ object DreamSpicyBoot {
 
 			// Agora nós iremos pegar todas as JARs necessárias para iniciar o servidor
 			for (pluginInfo in list) {
-				val pluginFolder = File(PLUGINS_PARADISE_FOLDER, pluginInfo.name)
-				pluginFolder.mkdirs()
-
-				val tagsFile = File(pluginFolder, "tags.yml")
-
-				var jarName = pluginInfo.name + ".jar"
-
-				if (pluginInfo.version != null) {
-					if (tagsFile.exists()) {
-						val tagging = mapper.readValue(tagsFile, Tagging::class.java)
-						val tag = tagging.tags.firstOrNull { it.name == pluginInfo.version }
-						if (tag != null) {
-							jarName = tag.jarName
-						}
-					} else {
-						if (pluginInfo.version == "LATEST") {
-							jarName = pluginFolder.listFiles().filter { it.extension == "jar" }.sortedByDescending { it.lastModified() }.first().name
-						} else {
-							jarName = pluginInfo.name + "-" + pluginInfo.version + ".jar"
-						}
-					}
-				}
-
-				val sourceJar = File(pluginFolder, jarName)
+				val sourceJar = getPluginJar(pluginInfo)
 
 				if (sourceJar.exists()) {
 					sourceJar.copyTo(File(pluginsFolder, "${pluginInfo.name}.jar"), true)
-					println(t.brightGreen("${t.brightYellow(pluginInfo.name)} copiado com sucesso para a pasta do servidor! Nome: ${t.brightYellow(jarName)}"))
+					println(t.brightGreen("${t.brightYellow(pluginInfo.name)} copiado com sucesso para a pasta do servidor! Nome: ${t.brightYellow(sourceJar.name)}"))
 				} else {
 					error("Source JAR de ${t.brightYellow(pluginInfo.name)} não existe ou não foi encontrada!")
 				}
@@ -249,6 +249,33 @@ object DreamSpicyBoot {
 		} else {
 			t.red("NÃO")
 		}
+	}
+
+	fun getPluginJar(pluginInfo: ServerPlugin): File {
+		val pluginFolder = File(PLUGINS_PARADISE_FOLDER, pluginInfo.name)
+		pluginFolder.mkdirs()
+
+		val tagsFile = File(pluginFolder, "tags.yml")
+
+		var jarName = pluginInfo.name + ".jar"
+
+		if (pluginInfo.version != null) {
+			if (tagsFile.exists()) {
+				val tagging = mapper.readValue(tagsFile, Tagging::class.java)
+				val tag = tagging.tags.firstOrNull { it.name == pluginInfo.version }
+				if (tag != null) {
+					jarName = tag.jarName
+				}
+			} else {
+				if (pluginInfo.version == "LATEST") {
+					jarName = pluginFolder.listFiles().filter { it.extension == "jar" }.sortedByDescending { it.lastModified() }.first().name
+				} else {
+					jarName = pluginInfo.name + "-" + pluginInfo.version + ".jar"
+				}
+			}
+		}
+
+		return File(pluginFolder, jarName)
 	}
 
 	fun HttpURLConnection.getContentAsString(): String {

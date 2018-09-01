@@ -1,6 +1,7 @@
 package net.perfectdreams.dreamspicyboot.plugins
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.salomonbrys.kotson.array
@@ -18,7 +19,11 @@ class GitHubUpdater @JsonCreator constructor(
 		@JsonProperty("organization")
 		val organization: String?
 ) : AutoUpdater() {
+	@Transient
+	@JsonIgnore
 	lateinit var downloadUrl: String
+	@Transient
+	@JsonIgnore
 	lateinit var index: String
 
 	override fun hasUpdateAvailable(pluginInfo: ServerPlugin): UpdateCheckState {

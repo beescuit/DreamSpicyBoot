@@ -20,7 +20,7 @@ class ServerConfig(
 		@JsonProperty("flags")
 		val flags: String,
 		@JsonProperty("plugins")
-		val plugins: List<ServerPlugin>
+		var plugins: MutableList<ServerPlugin>
 )
 
 class JRebelConfig @JsonCreator constructor(

@@ -5,5 +5,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 class Tagging @JsonCreator constructor(
 		@JsonProperty("tags")
-		val tags: List<Tag>
+		val tags: MutableList<Tag>
 )
