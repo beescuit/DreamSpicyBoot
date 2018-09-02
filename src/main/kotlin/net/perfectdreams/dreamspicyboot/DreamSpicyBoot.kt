@@ -251,11 +251,17 @@ object DreamSpicyBoot {
 			scriptLines += "# $randomTip\n"
 			scriptLines += "# Gerado às ${System.currentTimeMillis()}\n\n"
 
-            val process = Runtime.getRuntime().exec("which java")
-			val stdin = process.getInputStream()
-			val br = BufferedReader(java.io.InputStreamReader(stdin))
-			process.waitFor()
-			var javaStartup = br.readLines()[0]
+			var javaStartup: String;
+
+			if (spicyConfig.javaPath != null) {
+				javaStartup = spicyConfig.javaPath
+			} else {
+				val process = Runtime.getRuntime().exec("which java")
+				val stdin = process.getInputStream()
+				val br = BufferedReader(java.io.InputStreamReader(stdin))
+				process.waitFor()
+				javaStartup = br.readLines()[0]
+			}
 
 			if (spicyConfig.extraFlags != null) {
 				javaStartup += " ${spicyConfig.extraFlags.replace("{{serverName}}", serverConfig.serverName.replace(" ", "_").toLowerCase())}"
