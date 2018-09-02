@@ -22,6 +22,9 @@ import java.net.URL
 import java.nio.file.Paths
 import java.util.*
 import java.util.regex.Pattern
+import java.io.BufferedReader
+
+
 
 object DreamSpicyBoot {
 	val gson = Gson()
@@ -248,7 +251,11 @@ object DreamSpicyBoot {
 			scriptLines += "# $randomTip\n"
 			scriptLines += "# Gerado às ${System.currentTimeMillis()}\n\n"
 
-			var javaStartup = "/usr/local/jdk1.8.0_172/bin/java"
+            val process = Runtime.getRuntime().exec("which java")
+			val stdin = process.getInputStream()
+			val br = BufferedReader(java.io.InputStreamReader(stdin))
+			process.waitFor()
+			var javaStartup = br.readLines()[0]
 
 			if (spicyConfig.extraFlags != null) {
 				javaStartup += " ${spicyConfig.extraFlags.replace("{{serverName}}", serverConfig.serverName.replace(" ", "_").toLowerCase())}"
